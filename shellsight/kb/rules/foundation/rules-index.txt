@@ -1,0 +1,15 @@
+# Active rules for this deployment. Comment out rules that produce FPs in your environment.
+# Updated by: shellsight rules update
+#
+# foundation/ — committed, license-clean bundled packs (offline drop-and-run recall):
+foundation/signature-base-thor-webshells.yar    # 624 rules, DRL-1.1 (see SOURCES.md); regen: scripts/curate-rules.sh
+foundation/php-malware-finder.yar                # PHP rules, LGPL-3.0; IsPhp-gated (no cross-language FP)
+foundation/nsa-webshells-core.yar                # NSA core, CC0 (public domain)
+#
+# foundation/yara-forge/ — OPTIONAL aggregated breadth layer (~5k rules, ~7.5MB; NOT committed, gitignored).
+#               Default tier = core (curated/permissive; measured 2026-06-16: +2-4pp JSP/ASPX recall, 0 FP cost).
+#               Populate: cmd/diskprobe/scripts/download-yara-forge.sh   (YARA_FORGE_TIER=core|extended|full)
+#               -> foundation/yara-forge/packages/core/yara-rules-core.yar
+#
+# own/ — ShellSight gap-filling heuristics shipped with the binary.
+own/shellsight-heuristics.yar

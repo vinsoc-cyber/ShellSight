@@ -1,0 +1,12 @@
+VirtualHost configuration:
+*:8091                 hidden-musl.example (/etc/apache2/extra-vhosts/hidden.conf:1)
+ServerRoot: "/var/www"
+Main DocumentRoot: "/var/www/localhost/htdocs"
+Main ErrorLog: "/var/www/logs/error.log"
+Mutex default: dir="/run/apache2/" mechanism=default 
+Mutex mpm-accept: using_defaults
+PidFile: "/run/apache2/httpd.pid"
+Define: DUMP_VHOSTS
+Define: DUMP_RUN_CFG
+User: name="apache" id=100
+Group: name="apache" id=101

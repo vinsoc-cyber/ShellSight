@@ -1,0 +1,2 @@
+[Thu Aug 20 18:36:06.228060 2026] [core:warn] [pid 2947:tid 2947] AH00111: Config variable ${APACHE_RUN_DIR} is not defined
+apache2: Syntax error on line 80 of /etc/apache2/apache2.conf: DefaultRuntimeDir must be a valid directory, absolute or relative to ServerRoot

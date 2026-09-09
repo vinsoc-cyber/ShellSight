@@ -1,0 +1,40 @@
+# PostgreSQL for the analyst console — development and tests.
+#
+# This is NOT a production deployment. It binds to loopback only, uses a throwaway password, and
+# exists so that `go test ./internal/console/...` has a database to talk to.
+#
+#   docker compose -f shellsight/deploy/console/compose.yaml up -d
+#   docker compose -f shellsight/deploy/console/compose.yaml down          # keeps data
+#   docker compose -f shellsight/deploy/console/compose.yaml down -v       # drops data
+#
+# The image tag is pinned. An unpinned `postgres:latest` would let a major-version bump arrive
+# silently and break migrations on somebody else's machine but not yours.
+
+services:
+  postgres:
+    image: postgres:16.4-alpine
+    container_name: shellsight-console-db
+    environment:
+      POSTGRES_USER: console
+      POSTGRES_PASSWORD: console
+      POSTGRES_DB: shellsight_console
+    ports:
+      # Loopback-only, and on a non-default host port so it cannot collide with a PostgreSQL
+      # someone already runs locally. The container still listens on 5432 internally.
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - console-db:/var/lib/postgresql/data
+      # Runs once, only when the data volume is empty: creates the second database the test
+      # suite drops and recreates on every run.
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # Tests that fire the moment the port opens will fail: PostgreSQL accepts connections
+      # briefly during init before it is ready. pg_isready is the honest check.
+      test: ["CMD-SHELL", "pg_isready -U console -d shellsight_console"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  console-db:

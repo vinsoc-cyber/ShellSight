@@ -1,0 +1,112 @@
+{
+  "version": "1",
+  "java": {
+    "pipeline_contracts": [
+      "javax.servlet.Filter",
+      "javax.servlet.Servlet",
+      "javax.servlet.http.HttpServlet",
+      "javax.servlet.ServletRequestListener",
+      "javax.servlet.http.HttpSessionListener",
+      "javax.servlet.ServletContextListener",
+      "jakarta.servlet.Filter",
+      "jakarta.servlet.Servlet",
+      "jakarta.servlet.http.HttpServlet",
+      "jakarta.servlet.ServletRequestListener",
+      "jakarta.servlet.http.HttpSessionListener",
+      "jakarta.servlet.ServletContextListener",
+      "org.apache.catalina.Valve",
+      "org.apache.catalina.valves.ValveBase",
+      "org.apache.catalina.Container",
+      "org.apache.catalina.LifecycleListener",
+      "org.apache.coyote.Adapter",
+      "org.springframework.web.servlet.HandlerInterceptor",
+      "org.springframework.web.servlet.handler.HandlerInterceptorAdapter",
+      "org.springframework.web.servlet.mvc.Controller",
+      "org.springframework.web.filter.OncePerRequestFilter",
+      "com.opensymphony.xwork2.interceptor.Interceptor",
+      "org.apache.struts2.interceptor.AbstractInterceptor",
+      "org.eclipse.jetty.server.Handler",
+      "org.eclipse.jetty.server.handler.AbstractHandler",
+      "io.undertow.server.HttpHandler",
+      "javax.websocket.Endpoint",
+      "jakarta.websocket.Endpoint",
+      "javax.websocket.server.ServerEndpointConfig",
+      "java.lang.instrument.ClassFileTransformer"
+    ],
+    "type_needles": [
+      "java/lang/Runtime",
+      "java/lang/ProcessBuilder",
+      "javax/crypto/Cipher",
+      "java/lang/ClassLoader",
+      "java/lang/reflect/Method",
+      "javax/crypto/spec/SecretKeySpec"
+    ],
+    "string_needles": [
+      "cmd.exe",
+      "/bin/sh",
+      "/bin/bash",
+      "e45e329feb5d925b",
+      "3c6e0b8a9c15224a",
+      "X-Accel-Buffering"
+    ],
+    "retransform_watchlist": [
+      "org.apache.catalina.core.ApplicationFilterChain",
+      "org.apache.catalina.core.StandardWrapperValve",
+      "org.apache.catalina.core.StandardContextValve",
+      "org.apache.catalina.core.StandardHostValve",
+      "org.springframework.web.servlet.DispatcherServlet"
+    ]
+  },
+  "dotnet": {
+    "pipeline_contracts": [
+      "System.Web.IHttpModule",
+      "System.Web.IHttpHandler",
+      "System.Web.IHttpAsyncHandler",
+      "System.Web.HttpApplication",
+      "System.Web.UI.Page",
+      "System.Web.Mvc.Controller",
+      "System.Web.Http.ApiController",
+      "System.Web.Hosting.VirtualPathProvider",
+      "Microsoft.AspNetCore.Http.IMiddleware",
+      "Microsoft.AspNetCore.Mvc.Controller",
+      "Microsoft.AspNetCore.Mvc.Filters.IAsyncActionFilter",
+      "Microsoft.AspNetCore.Mvc.Filters.IActionFilter",
+      "Microsoft.AspNetCore.Routing.IRouter",
+      "Microsoft.AspNetCore.Routing.IEndpointRouteBuilder",
+      "Microsoft.AspNetCore.Hosting.IStartupFilter",
+      "Microsoft.AspNetCore.Mvc.RazorPages.PageModel",
+      "Microsoft.Owin.IOwinMiddleware"
+    ],
+    "capability_apis": [
+      "Process.Start",
+      "Assembly.Load",
+      "DynamicMethod",
+      "Marshal.GetDelegateForFunctionPointer",
+      "Convert.FromBase64String",
+      "MethodInfo.Invoke",
+      "File.WriteAllBytes",
+      "File.WriteAllText",
+      "WebClient.DownloadString",
+      "WebClient.DownloadData",
+      "HttpClient.GetAsync",
+      "HttpClient.PostAsync"
+    ],
+    "string_needles": [
+      "cmd.exe",
+      "powershell",
+      "WScript.Shell",
+      "/c ",
+      "ProcessStartInfo",
+      "e45e329feb5d925b",
+      "3c6e0b8a9c15224a"
+    ],
+    "framework_public_keys": [
+      "00000000000000000400000000000000",
+      "002400000480000094000000060200000024000052534131000400000100010007d1fa57c4aed9f0a32e84aa0faefd0de9e8fd6aec8f87fb03766c834c99921eb23be79ad9d5dcc1dd9ad236132102900b723cf980957fc4e177108fc607774f29e8320e92ea05ece4e821c0a5efe8f1645c4c0c93c1ab99285d622caa652c1dfad63d745d6f2de5f17e5eaf0fc4963d261c8a12436518206dc093344d5ad293",
+      "0024000004800000940000000602000000240000525341310004000001000100b5fc90e7027f67871e773a8fde8938c81dd402ba65b9201d60593e96c492651e889cc13f1415ebb53fac1131ae0bd333c5ee6021672d9718ea31a8aebd0da0072f25d87dba6fc90ffd598ed4da35e44c398c454307e8e33b8426143daec9f596836f97c8f74750e5975c64e2189f45def46b2a2b1247adc3652bf5c308055da9",
+      "00240000048000009400000006020000002400005253413100040000010001004b86c4cb78549b34bab61a3b1800e23bfeb5b3ec390074041536a7e3cbd97f5f04cf0f857155a8928eaa29ebfd11cfbbad3ba70efea7bda3226c6a8d370a4cd303f714486b6ebc225985a638471e6ef571cc92a4613c00b8fa65d61ccee0cbe5f36330c9a01f4183559f1bef24cc2917c6d913e3a541333a1d05d9bed22b38cb",
+      "0024000004800000940000000602000000240000525341310004000001000100f33a29044fa9d740c9b3213a93e57c84b472c84e0b8a0e1ae48e67a9f8f6de9d5f7f3d52ac23e48ac51801f1dc950abe901da34d2a9e3baadb141a17c77ef3c565dd5ee5054b91cf63bb3c6ab83f72ab3aafe93d0fc3c2348b764fafb0b1c0733de51459aeab46580384bf9d74c4e28164b7cde247f891ba07891c9d872ad2bb",
+      "00240000048000009400000006020000002400005253413100040000010001008d56c76f9e8649383049f383c44be0ec204181822a6c31cf5eb7ef486944d032188ea1d3920763712ccb12d75fb77e9811149e6148e5d32fbaab37611c1878ddc19e20ef135d0cb2cff2bfec3d115810c3d9069638fe4be215dbf795861920e5ab6f7db2e2ceef136ac23d5dd2bf031700aec232f6c6b1c785b4305c123b37ab"
+    ]
+  }
+}

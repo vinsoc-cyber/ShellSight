@@ -1,0 +1,13 @@
+{
+  "version": "1",
+  "java": {
+    "pipeline_contracts": ["javax.servlet.Filter"],
+    "type_needles": ["java/lang/Runtime"],
+    "string_needles": ["cmd.exe"]
+  },
+  "dotnet": {
+    "pipeline_contracts": ["System.Web.IHttpHandler"],
+    "capability_apis": ["Process.Start"],
+    "string_needles": ["cmd.exe"]
+  }
+}

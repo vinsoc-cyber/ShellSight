@@ -1,0 +1,1140 @@
+/* ShellSight analyst console — IR/SOC theme.
+ *
+ * Dark only, deliberately. This is an internal tool an analyst keeps open for a shift; a single
+ * well-tuned dark theme is worth more than two half-maintained ones, and the earlier light-first
+ * palette left the severity bands washed out in exactly the mode people actually use.
+ *
+ * Four rules the design follows:
+ *
+ *   1. Severity is never carried by hue alone. Every band keeps its text label, and the bands run
+ *      down a LIGHTNESS ramp as well as a hue ramp, so they survive a colourblind analyst and a
+ *      badly-calibrated monitor. The ramp is red → orange → amber → green: the previous palette
+ *      gave confirmed (#ff8b95) and likely-malicious (#ff9aa3) two shades of the same pink, which
+ *      made the two most consequential bands the two hardest to tell apart.
+ *   2. Warnings sit on desaturated grounds with bright text. Saturated red on navy vibrates and is
+ *      unreadable at the row density a triage queue needs.
+ *   3. Hashes, paths and counts are monospace with tabular figures. They are scanned and compared
+ *      far more often than they are read.
+ *   4. UPPERCASE is an eyebrow, not a label style. Shouting every form label and table heading
+ *      flattens the hierarchy it was meant to create, and uppercase text is measurably slower to
+ *      read. It is kept for section eyebrows and column heads only.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Ground and surfaces. Five steps, each a real step: page → raised → panel → line → hover. */
+  --bg: #080d18;
+  --bg-raised: #0d1524;
+  --panel: #101a2c;
+  --panel-top: #16233a; /* the hairline highlight along a panel's top edge */
+  --hover: #16233c;
+  --line: #1e2c47;
+  --line-soft: #182440;
+
+  /* Text, four levels. */
+  --fg: #dde6f6;
+  --fg-dim: #a3b5d1;
+  --muted: #7f92b3;
+  --faint: #5d6f8f;
+
+  --accent: #4fc3dc;
+  --accent-dim: #2b6b7d;
+  --accent-bright: #8ad9ef;
+
+  /* Severity: a four-step ramp, hue AND lightness. Background / foreground / border per band. */
+  --sev-confirmed-bg: #3d0a12;
+  --sev-confirmed-fg: #ff6b7a;
+  --sev-confirmed-bd: #8c1f2d;
+  --sev-likely-bg: #3a1c08;
+  --sev-likely-fg: #ff9d52;
+  --sev-likely-bd: #8a4a15;
+  --sev-susp-bg: #332809;
+  --sev-susp-fg: #ffd166;
+  --sev-susp-bd: #6e5518;
+  --sev-clean-bg: #0b2a1d;
+  --sev-clean-fg: #5fd39b;
+  --sev-clean-bd: #1d5138;
+
+  --mono: ui-monospace, "JetBrains Mono", "Cascadia Mono", SFMono-Regular, Menlo, Consolas,
+    monospace;
+
+  /* One spacing rhythm, so panels, rows and toolbars line up without each screen re-deciding. */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --r-sm: 5px;
+  --r-md: 7px;
+  --r-lg: 10px;
+
+  --header-h: 50px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 13.5px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------------------------------------------------------- app shell */
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--s5);
+  height: var(--header-h);
+  padding: 0 var(--s5);
+  background: linear-gradient(180deg, #101a2c, #0b1220);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-weight: 650;
+  font-size: 13.5px;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  color: var(--fg);
+  white-space: nowrap;
+}
+/* The mark reads as a live indicator rather than a bullet: a lit core inside a soft ring. */
+.brand::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79, 195, 220, 0.16);
+}
+
+header nav {
+  display: flex;
+  gap: 2px;
+}
+header nav a {
+  position: relative;
+  color: var(--fg-dim);
+  text-decoration: none;
+  padding: 6px 11px;
+  border-radius: var(--r-sm);
+  transition: color 0.1s, background 0.1s;
+}
+header nav a:hover {
+  color: var(--fg);
+  background: var(--hover);
+}
+header nav a.active {
+  color: var(--fg);
+  font-weight: 600;
+}
+/* The active tab is marked by an accent underline rather than a filled box: at four items a row of
+   filled chips competes with the page's own controls for attention. */
+header nav a.active::after {
+  content: "";
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--accent);
+}
+
+/* The analyst's name is configuration, not a per-screen concern. It used to occupy the top-right
+   of every screen as an input plus two lines of prose; it is now a chip that opens on click, and
+   the prose lives inside it. The input stays in the DOM either way, so the name is still one
+   keystroke from being corrected. */
+.identity {
+  margin-left: auto;
+  position: relative;
+}
+.identity > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  color: var(--fg-dim);
+  cursor: pointer;
+  list-style: none;
+  white-space: nowrap;
+}
+.identity > summary::-webkit-details-marker {
+  display: none;
+}
+.identity > summary:hover {
+  color: var(--fg);
+  border-color: #2a3d5c;
+}
+.identity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.identity-dot.anon {
+  background: var(--faint);
+}
+.identity-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 22rem;
+  padding: var(--s4);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  z-index: 40;
+}
+.identity-panel label {
+  display: block;
+  margin-bottom: var(--s1);
+  font-weight: 600;
+  color: var(--fg-dim);
+}
+.identity-panel input {
+  width: 100%;
+}
+
+main {
+  padding: var(--s5);
+  max-width: 1420px;
+  margin: 0 auto;
+}
+
+/* ---------------------------------------------------------------- surfaces */
+
+.panel {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--s4) var(--s5) var(--s5);
+}
+/* A one-pixel lit top edge. This is the whole "material" of the theme: it separates a panel from
+   the ground without a heavier border, and it is what makes a flat dark surface read as a
+   deliberate object rather than an absence of colour. */
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  background: linear-gradient(90deg, transparent, var(--panel-top) 18%, var(--panel-top) 82%, transparent);
+}
+.panel + .panel {
+  margin-top: var(--s4);
+}
+.panel h3 {
+  margin: 0 0 var(--s3);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.panel h4 {
+  margin: var(--s5) 0 var(--s2);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* A panel that is itself the warning — "this scan reported no coverage". */
+.panel.warn {
+  background: var(--sev-susp-bg);
+  border-color: var(--sev-susp-bd);
+  color: var(--sev-susp-fg);
+}
+.panel.warn::before {
+  display: none;
+}
+.panel.warn strong {
+  color: #ffe0a8;
+}
+
+/* ---------------------------------------------------------------- type */
+
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+.empty {
+  padding: var(--s5) 0;
+  color: var(--muted);
+}
+code,
+.mono {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+code {
+  background: var(--bg-raised);
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--fg-dim);
+}
+
+a {
+  color: var(--accent);
+  text-decoration-color: var(--accent-dim);
+  text-underline-offset: 2px;
+}
+a:hover {
+  color: var(--accent-bright);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: 3px;
+}
+
+/* A long hash is an identity to compare, not prose to read. It gets one line, an ellipsis and its
+   full value in the title, so it stops being the widest column on the screen. */
+.hash {
+  display: inline-block;
+  max-width: 15rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- toolbar */
+
+/* Every list screen carries the same bar: what this is and how many, then the controls. Sticky
+   under the app header, so the search box and the pager stay reachable from row 200. */
+.toolbar {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  margin: calc(var(--s4) * -1) calc(var(--s5) * -1) var(--s3);
+  padding: var(--s3) var(--s5);
+  /* Fully opaque. A translucent sticky bar lets the rows it is pinned over show through it, which
+     reads as a rendering fault rather than as depth. */
+  background: var(--panel);
+  box-shadow: 0 6px 12px -8px rgba(0, 0, 0, 0.7);
+  border-bottom: 1px solid var(--line-soft);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+}
+.toolbar h3 {
+  margin: 0;
+}
+.toolbar .grow {
+  flex: 1 1 auto;
+}
+
+/* The population of the list, beside its name. A count is the first question anyone asks of a
+   library and the console used to answer it only by making you scroll to the end. */
+.count-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  color: var(--fg-dim);
+  font-size: 11.5px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.count-chip.filtered {
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
+
+/* A search field that reads as one. */
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 13rem;
+}
+.search input {
+  width: 100%;
+  padding-left: 27px;
+}
+.search::before {
+  content: "⌕";
+  position: absolute;
+  left: 9px;
+  color: var(--faint);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- pager */
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+}
+.pager-range {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pager-range strong {
+  color: var(--fg-dim);
+}
+.pager-btns {
+  display: flex;
+  gap: 2px;
+}
+.pager-btns button {
+  min-width: 28px;
+  padding: 4px 7px;
+  font-variant-numeric: tabular-nums;
+}
+.pager-pos {
+  padding: 0 var(--s1);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--fg-dim);
+}
+.pager select {
+  padding: 3px 5px;
+  font-size: 12px;
+}
+
+/* A footer pager sits under the table it pages, unsticky, so the bottom of a page is also a place
+   you can move from. */
+.pager-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--s3);
+  margin-top: var(--s2);
+  border-top: 1px solid var(--line-soft);
+}
+
+/* ---------------------------------------------------------------- tables */
+
+.scroll {
+  overflow-x: auto;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+th,
+td {
+  text-align: left;
+  padding: 7px 11px;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+}
+th {
+  background: var(--bg-raised);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  border-bottom-color: var(--line);
+  white-space: nowrap;
+}
+th:first-child {
+  border-radius: var(--r-sm) 0 0 0;
+}
+th:last-child {
+  border-radius: 0 var(--r-sm) 0 0;
+}
+tbody tr {
+  transition: background 0.08s;
+}
+tbody tr:hover td {
+  background: var(--hover);
+}
+tbody tr:last-child td {
+  border-bottom: none;
+}
+/* Numeric columns align on the digit, not the left edge. */
+td.num,
+th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A view that failed. Tinted, not shouted — the reason text carries the detail. */
+.row-bad td {
+  background: rgba(140, 31, 45, 0.16);
+}
+.row-bad:hover td {
+  background: rgba(140, 31, 45, 0.24);
+}
+
+/* The row whose detail is open below. Without it, clicking a rule set scrolls a panel into view
+   with nothing left on screen saying which row produced it. */
+tbody tr.row-selected td {
+  background: rgba(79, 195, 220, 0.09);
+}
+tbody tr.row-selected td:first-child {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+/* ---------------------------------------------------------------- controls */
+
+.row {
+  display: flex;
+  gap: var(--s2) var(--s3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.row + .row {
+  margin-top: var(--s2);
+}
+/* Sentence case, not uppercase: see rule 4 at the top. Weight and colour carry the label, which
+   leaves uppercase free to mean "section heading" and nothing else. */
+.row label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--fg-dim);
+}
+.spacer-left {
+  margin-left: auto;
+}
+.block-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin: var(--s4) 0 var(--s1);
+}
+
+/* A filter block: a bordered group whose contents are clearly one control each, instead of a
+   single wrapping line of labels, inputs and checkboxes running into one another. */
+.filters {
+  display: flex;
+  gap: var(--s3) var(--s5);
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding: var(--s3) var(--s4);
+  background: var(--bg-raised);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.field > label,
+.field-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+}
+.chk-group {
+  display: flex;
+  gap: var(--s1) var(--s3);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  padding: 5px 8px;
+  background: var(--bg-raised);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  transition: border-color 0.1s;
+}
+input::placeholder {
+  color: var(--faint);
+}
+input:hover,
+textarea:hover,
+select:hover {
+  border-color: #2a3d5c;
+}
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent-dim);
+}
+
+button {
+  font: inherit;
+  padding: 5px 11px;
+  background: var(--bg-raised);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+button:hover:not(:disabled) {
+  background: var(--hover);
+  border-color: #2a3d5c;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* The one action on a screen that is the point of the screen. */
+button.primary {
+  background: linear-gradient(180deg, #1b4f60, #163f4e);
+  border-color: #2b6b7d;
+  color: #d6f4fd;
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #226176, #1a4b5c);
+  border-color: #3b8ba1;
+}
+
+/* An inline text button — the group expander, and a rule-set name. */
+button.link {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--accent);
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--accent-dim);
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+button.link:hover:not(:disabled) {
+  background: none;
+  color: var(--accent-bright);
+}
+
+.chk {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--fg-dim);
+  white-space: nowrap;
+}
+.chk input {
+  margin: 0;
+}
+.chk.off {
+  color: var(--faint);
+}
+
+.editor {
+  width: 100%;
+  min-height: 17rem;
+  resize: vertical;
+  line-height: 1.5;
+  background: #0a1120;
+  tab-size: 2;
+}
+
+/* ---------------------------------------------------------------- severity */
+
+.tier {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px 2px 7px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+/* A filled dot at the head of the badge. Redundant with the colour on purpose: at a glance down a
+   queue the dot is what the eye counts, and it keeps its meaning in greyscale through the ramp. */
+.tier::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+.tier-score {
+  font-weight: 500;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+  padding-left: 3px;
+  border-left: 1px solid currentColor;
+  margin-left: 1px;
+}
+.tier-confirmed {
+  background: var(--sev-confirmed-bg);
+  color: var(--sev-confirmed-fg);
+  border-color: var(--sev-confirmed-bd);
+}
+.tier-likely-malicious {
+  background: var(--sev-likely-bg);
+  color: var(--sev-likely-fg);
+  border-color: var(--sev-likely-bd);
+}
+.tier-suspicious {
+  background: var(--sev-susp-bg);
+  color: var(--sev-susp-fg);
+  border-color: var(--sev-susp-bd);
+}
+.tier-clean {
+  background: var(--sev-clean-bg);
+  color: var(--sev-clean-fg);
+  border-color: var(--sev-clean-bd);
+}
+.tier-unknown {
+  background: var(--bg-raised);
+  color: var(--fg-dim);
+  border-color: var(--line);
+}
+/* A band this console does not recognise — a newer scanner. Italic so it reads as "unmapped"
+   rather than as a band with a meaning. */
+.tier-unrecognised {
+  background: var(--bg-raised);
+  color: var(--muted);
+  border-color: var(--line);
+  font-style: italic;
+}
+/* The verdict at the head of a scan, where the badge is the headline and not a table cell. */
+.tier-lg {
+  font-size: 14px;
+  padding: 5px 14px 5px 11px;
+  gap: 8px;
+}
+.tier-lg::before {
+  width: 8px;
+  height: 8px;
+}
+
+/* Something the scan itself flags: incomplete, or a report that does not match its manifest. */
+.flag {
+  color: var(--sev-confirmed-fg);
+  font-weight: 650;
+  font-size: 11.5px;
+}
+
+/* ---------------------------------------------------------------- stats */
+
+/* A queue's shape before its contents: how many of each band, and how much is still undecided.
+   Without it the only way to learn a scan has three confirmed findings is to count them. */
+.stats {
+  display: flex;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  font-size: 11.5px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.1s, background 0.1s;
+}
+.stat:hover {
+  border-color: #2a3d5c;
+  background: var(--hover);
+}
+.stat-n {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+.stat.on {
+  border-color: var(--accent-dim);
+  background: rgba(79, 195, 220, 0.08);
+}
+.stat-confirmed .stat-n {
+  color: var(--sev-confirmed-fg);
+}
+.stat-likely-malicious .stat-n {
+  color: var(--sev-likely-fg);
+}
+.stat-suspicious .stat-n {
+  color: var(--sev-susp-fg);
+}
+.stat-clean .stat-n {
+  color: var(--sev-clean-fg);
+}
+
+/* ---------------------------------------------------------------- scan view */
+
+.verdict {
+  display: flex;
+  gap: var(--s5);
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.facts {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 3px var(--s4);
+  margin: 0;
+}
+.facts dt {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.facts dd {
+  margin: 0;
+  color: var(--fg-dim);
+}
+
+/* The sentence that stops a verdict being read alone. */
+.qualify {
+  margin: var(--s3) 0 0;
+  padding: 10px 13px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--sev-susp-bd);
+  border-left-width: 3px;
+  background: var(--sev-susp-bg);
+  color: var(--sev-susp-fg);
+}
+.qualify strong {
+  color: #ffe0a8;
+}
+.qualify.small {
+  padding: 7px 11px;
+}
+
+/* An inline reason attached to a disabled control — "why this view is not on offer". It is a
+   footnote next to a checkbox, so it must NOT take the .qualify panel treatment: as a block-level
+   warning box inside a label it rendered as a shouting yellow slab wider than the control it
+   annotated, and inherited uppercase from .row label on the way. */
+.note-inline {
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Prose an analyst needs once and then never again. Available, not permanent: the console has a
+   lot to say about what it will and will not claim, and saying all of it on every render is what
+   made the screens read as walls of text. */
+.explain {
+  margin: var(--s2) 0 0;
+}
+.explain > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.explain > summary::-webkit-details-marker {
+  display: none;
+}
+.explain > summary::before {
+  content: "?";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  font-size: 10px;
+  font-weight: 700;
+}
+.explain > summary:hover {
+  color: var(--fg-dim);
+}
+.explain-body {
+  margin-top: var(--s2);
+  padding: 10px 13px;
+  border-left: 2px solid var(--line);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  background: var(--bg-raised);
+  color: var(--fg-dim);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.explain-body p {
+  margin: 0 0 var(--s2);
+}
+.explain-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------------------------------------------------------------- triage */
+
+.group {
+  position: relative;
+  border: 1px solid var(--line);
+  border-left-width: 3px;
+  border-radius: var(--r-md);
+  padding: var(--s3);
+  margin-bottom: var(--s2);
+  background: #0d1727;
+  transition: border-color 0.1s;
+}
+.group:hover {
+  border-color: #26374f;
+}
+/* The severity rail. Reading a queue is mostly counting how much red there is, and a rail does
+   that from the corner of the eye at any scroll position. */
+.group-confirmed {
+  border-left-color: var(--sev-confirmed-bd);
+}
+.group-likely-malicious {
+  border-left-color: var(--sev-likely-bd);
+}
+.group-suspicious {
+  border-left-color: var(--sev-susp-bd);
+}
+.group-clean {
+  border-left-color: var(--sev-clean-bd);
+}
+.group-head {
+  display: flex;
+  gap: var(--s3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.group-meta {
+  display: flex;
+  gap: var(--s3);
+  align-items: baseline;
+  flex-wrap: wrap;
+  margin-top: 5px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+/* A decided group is done. It stays in the list — the decision is evidence — but it recedes. */
+.group.decided {
+  opacity: 0.72;
+}
+.group.decided:hover {
+  opacity: 1;
+}
+
+/* A judgement already recorded against this content, possibly on another engagement. It sits
+   above the decide buttons on purpose, so an analyst cannot re-litigate without seeing it. */
+.prior {
+  margin: var(--s2) 0;
+  padding: 8px 11px;
+  border-left: 3px solid var(--sev-susp-bd);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  background: #131f33;
+  font-size: 12px;
+  color: var(--fg-dim);
+}
+.prior strong {
+  color: var(--fg);
+}
+.prior ul {
+  margin: 4px 0 0;
+  padding-left: 17px;
+}
+
+.verdict-malicious {
+  color: var(--sev-confirmed-fg);
+  font-weight: 650;
+}
+.verdict-false-positive {
+  color: var(--sev-clean-fg);
+  font-weight: 650;
+}
+.verdict-benign-noteworthy {
+  color: var(--sev-susp-fg);
+  font-weight: 650;
+}
+.verdict-undecided {
+  color: var(--muted);
+  font-weight: 650;
+}
+
+.decide {
+  margin-top: var(--s3);
+  padding-top: var(--s2);
+  border-top: 1px solid var(--line-soft);
+}
+.decide input {
+  min-width: 12rem;
+  flex: 1 1 12rem;
+}
+
+/* Tint each decide button by the judgement it records, so the destructive-feeling one is not
+   identical to the harmless one. Keyed on data-verdict, not on position: a positional selector
+   would silently mis-colour the row if VERDICTS were ever reordered. */
+.decide button[data-verdict="malicious"] {
+  color: var(--sev-confirmed-fg);
+  border-color: var(--sev-confirmed-bd);
+}
+.decide button[data-verdict="malicious"]:hover:not(:disabled) {
+  background: var(--sev-confirmed-bg);
+}
+.decide button[data-verdict="false-positive"] {
+  color: var(--sev-clean-fg);
+  border-color: var(--sev-clean-bd);
+}
+.decide button[data-verdict="false-positive"]:hover:not(:disabled) {
+  background: var(--sev-clean-bg);
+}
+.decide button[data-verdict="benign-noteworthy"] {
+  color: var(--sev-susp-fg);
+  border-color: var(--sev-susp-bd);
+}
+.decide button[data-verdict="benign-noteworthy"]:hover:not(:disabled) {
+  background: var(--sev-susp-bg);
+}
+
+/* Evidence is a matched substring of attacker-controlled file content. Wrap anywhere, preserve
+   whitespace, and keep it visually inset so it is never mistaken for the console's own words. */
+.evidence {
+  max-width: 34rem;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  color: var(--fg-dim);
+}
+
+/* ---------------------------------------------------------------- actions */
+
+/* The bar that carries what a screen is FOR. On a draft rule set that is Freeze, which used to
+   render below the whole 200-row rule browser: present, reachable only after eight thousand
+   pixels of scrolling, and therefore reported as missing. A screen's own verb belongs at its
+   head, not after its data. */
+.actions {
+  display: flex;
+  gap: var(--s3);
+  align-items: center;
+  flex-wrap: wrap;
+  padding: var(--s3) var(--s4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, var(--bg-raised), #0b1220);
+}
+.actions .sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--line);
+}
+.actions input {
+  width: 6rem;
+}
+
+/* ---------------------------------------------------------------- messages */
+
+.errbox {
+  display: flex;
+  gap: var(--s2);
+  align-items: baseline;
+  flex-wrap: wrap;
+  padding: 10px 13px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--sev-confirmed-bd);
+  border-left-width: 3px;
+  background: #2a1119;
+  color: var(--sev-confirmed-fg);
+}
+.errbox strong {
+  color: #ffb8bf;
+}
+.errbox button {
+  background: transparent;
+  border-color: var(--sev-confirmed-bd);
+  color: var(--sev-confirmed-fg);
+}
+.errbox button:hover:not(:disabled) {
+  background: rgba(140, 31, 45, 0.35);
+}
+
+/* The compiler's own words about a rule that will not compile. Deliberately NOT an error banner:
+   the request was fine and the content was refused, so this belongs beside the text being edited. */
+.compile-error {
+  margin: var(--s3) 0 0;
+  padding: 10px 13px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--sev-susp-bd);
+  border-left-width: 3px;
+  background: #241c08;
+  color: var(--sev-susp-fg);
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.ok {
+  color: var(--sev-clean-fg);
+}
+
+/* A link that performs an action reads as a control, not as prose. "Write a rule" is the only way
+   into the editor and was rendering as bare underlined text among the toolbar's buttons. */
+.btn-link {
+  padding: 5px 11px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  color: var(--fg);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.1s, border-color 0.1s;
+}
+.btn-link:hover {
+  background: var(--hover);
+  border-color: #2a3d5c;
+  color: var(--fg);
+}
+
+/* A checkbox group is as wide as its options and never lines up beside a text input. Given its own
+   row it aligns with the fields above it instead of hanging off the end of one. */
+.field-wide {
+  flex: 1 1 100%;
+}
+
+/* A pack or layer name is an identifier. Breaking "signature-base" across two lines doubles the
+   height of every row in the table to save a column of width. */
+td.nowrap,
+th.nowrap {
+  white-space: nowrap;
+}
+
+/* The band summary sits between the sticky toolbar and the queue it describes. */
+.stats {
+  margin: var(--s2) 0 var(--s3);
+}

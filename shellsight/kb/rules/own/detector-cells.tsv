@@ -1,0 +1,51 @@
+knowledge_ref	cells
+# Which technique cell each GO detector's knowledge-ref belongs to. YARA rules carry their own
+# `shellsight_cells` meta; Go detectors cannot, so the mapping lives here.
+#
+# DIRECTION MATTERS. The cells were derived from retrieved prior art in taxonomy.yaml FIRST, and
+# these detectors were mapped onto them afterwards. Deriving the cells from the detectors would make
+# coverage a tautology -- every technique we detect would appear covered.
+#
+# Each row was assigned by reading what the rule DOES in internal/phptaint/taint.go, not by reading
+# its name. `sink-on-request` is the clearest reason why: the name suggests one cell and the code
+# covers five, because eval, include/require and `new ReflectionFunction(...)->invoke()` are all
+# language constructs it handles in separate branches under one ref.
+#
+# perlpytaint speaks for THREE languages from one row -- detectors.GO_PACKAGE_LANGUAGES maps
+# the package to perl, python and cgi -- so this row carries every language's cells together
+# and V2 checks each kit against the prefix that belongs to it. Perl's four were assigned by
+# reading perlSinks in taint.go, not the ref's name: the pass implements system, exec,
+# backtick, qx, piped-open and string-eval, and has NO two-arg-open sink, so
+# perl/dispatch/two-arg-open-injection is deliberately absent and is a measured gap.
+perlpytaint:sink-on-request	perl/dispatch/system-exec,perl/dispatch/backtick-qx,perl/dispatch/piped-open,perl/dispatch/string-eval,python/dispatch/os-system,python/dispatch/subprocess-shell,python/dispatch/subprocess-argv,python/dispatch/eval,python/dispatch/exec,cgi/channel/meta-variables,cgi/channel/request-body,cgi/channel/param-parser,cgi/dispatch/interpreter-sinks
+# asptaint speaks for TWO languages -- `cmd/diskprobe` gates the pass on `ctxASP || ctxASPX` -- so,
+# like perlpytaint above, one row carries both kits' cells and V2 checks each against its own prefix.
+#
+# Assigned by reading `internal/asptaint/taint.go`, not the ref's name. The four `asp/channel/*`
+# cells are the named alternatives of `sourceExpr`; `executeglobal` and `scriptcontrol` are separate
+# sink entries; `eval-request` is the `direct` branch and `eval-request-indirect` is the propagation
+# the pass was built for. `session-staged` is covered through `elemAssignRe`, which taints the
+# container NAME on `Session("x") = Request("y")`.
+#
+# THREE THINGS ARE DELIBERATELY ABSENT, because the code does not do them and a cell that reads as
+# covered while its construct is unimplemented is the most expensive error in this table:
+#   - `aspx/channel/request-body`: `BinaryRead`/`TotalBytes` are sources but `InputStream` -- the
+#     .NET-idiomatic spelling, and 47/475 of the aspx candidate pool -- is not. 2 of 3 markers is
+#     not coverage.
+#   - every `aspx/surface/*` cell: the pass PARSES the WebHandler surface, it does not assert it.
+#   - `aspx/family/china-chopper`: findings carry `Family: "GenericWebshell"`; the pass attributes
+#     nothing. Four of the closed gap items are China Chopper, and it still is not this pass's claim.
+asptaint:sink-on-request	asp/dispatch/eval-request,asp/dispatch/eval-request-indirect,asp/dispatch/executeglobal,asp/dispatch/scriptcontrol,asp/obfuscation/session-staged,asp/channel/request-form,asp/channel/request-querystring,asp/channel/request-binaryread,asp/channel/request-servervariables,aspx/dispatch/jscript-eval,aspx/channel/request-accessor
+phptaint:sink-on-request	php/dispatch/eval-request,php/dispatch/eval-request-indirect,php/dispatch/include-controlled,php/dispatch/reflection-invoke,php/dispatch/program-exec
+phptaint:com-exec-on-request	php/dispatch/program-exec
+phptaint:callback-on-request	php/dispatch/callback-sink
+phptaint:request-tainted-callback	php/dispatch/callback-sink,php/dispatch/variable-function
+phptaint:unbound-callback-dispatch	php/dispatch/callback-sink
+phptaint:dynamic-dispatch-on-request	php/dispatch/variable-function
+phptaint:direct-invoke-built-callable	php/dispatch/variable-function,php/obfuscation/concat-split
+phptaint:forwarder-obfuscated-callee	php/dispatch/callback-sink,php/obfuscation/concat-split
+phptaint:decode-loop-dispatch	php/obfuscation/decode-chain,php/obfuscation/custom-crypt
+phptaint:nibble-assembler-loop	php/obfuscation/numeric-escape,php/entropy/packed-blob
+phptaint:arbitrary-file-write	php/capability/file-drop
+phptaint:file-drop-on-request	php/capability/file-drop
+phptaint:sql-registered-callable	php/capability/database,php/dispatch/callback-sink

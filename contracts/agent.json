@@ -1,0 +1,22 @@
+{
+  "schema_version": "1",
+  "build_id": "b-7f3a91",
+  "views": [
+    "disk"
+  ],
+  "scan_scope": [
+    "/var/www",
+    "/srv/http"
+  ],
+  "rule_set": {
+    "name": "sweep-acme",
+    "version": 3,
+    "yarc": "rules/set.yarc",
+    "yarc_sha256": "aeabf48ad4390ab86aae9ec4dbcccb5fd331f93d36bc6b45b4966b0166149353"
+  },
+  "output_format": "json",
+  "process_priority": "low",
+  "generated_at": "2026-09-04T12:00:00Z",
+  "generated_by": "v.quannh67",
+  "release": "v1.0.0-488-gdd02888"
+}

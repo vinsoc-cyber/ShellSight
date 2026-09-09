@@ -1,0 +1,40 @@
+# Build output. The scanner is assembled by scripts/package.sh into shellsight/bin/ (windows) or
+# shellsight/dist/ (linux), and the release archives land in shellsight/release/.
+#
+# ANCHORED, deliberately. A bare `dist/` matches any directory of that name at any depth, which
+# includes console/internal/web/dist -- the built dashboard that MUST stay tracked for web.go's
+# //go:embed to find it. That is not hypothetical: the unanchored version of this file silently
+# re-ignored the dashboard, and the export self-test caught it by asking git what it actually
+# ignores rather than reading this comment.
+shellsight/bin/
+shellsight/dist/
+shellsight/release/
+
+# The YARA engine is fetched, not vendored: scripts/fetch-yara-x.sh
+third_party/
+
+# Go, .NET and Node build residue
+*.exe
+*.test
+*.o
+*.obj
+__pycache__/
+node_modules/
+probes/dotnetmem/bin/
+probes/dotnetmem/obj/
+probes/javamem/out/
+probes/javamem/test-out/
+
+# Scan output. Every run writes report.json, findings.ndjson and summary.txt INSIDE a run folder, so
+# ignoring the folder is sufficient.
+#
+# Bare `report.json` etc. are deliberately NOT listed. They looked harmless and were not: a bare
+# rule swallowed console/internal/report/testdata/report.json, a tracked test fixture, so a fresh
+# clone would have failed internal/report's tests with a file that was present but untracked. Same
+# lesson as the anchored dist/ rule above -- an unanchored filename matches at every depth.
+run_*/
+
+# NOT ignored, deliberately: console/internal/web/dist. internal/web/web.go embeds it with
+# `//go:embed all:dist`, so ignoring it would make a clone serve placeholder.html instead of the
+# dashboard. It is also pinned -text in .gitattributes, because it is Vite's bytes rather than
+# source and a line-ending rewrite would change what gets embedded.

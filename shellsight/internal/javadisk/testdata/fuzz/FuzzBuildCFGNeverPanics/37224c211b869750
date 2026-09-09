@@ -1,0 +1,5 @@
+go test fuzz v1
+[]byte("N\x86\\\x16\u0082")
+uint16(0)
+uint16(0)
+uint16(127)

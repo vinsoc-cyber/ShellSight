@@ -1,0 +1,1 @@
+rule stub { condition: false }

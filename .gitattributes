@@ -1,0 +1,18 @@
+# Shell scripts are LF-only, in the working tree as well as in the object database.
+#
+# They are executed by bash (git-bash / MSYS on Windows, sh on Linux), and CRLF in a shell script is
+# at best tolerated and at worst fatal: a stray \r rides along in captured command output and
+# variable values, and a CRLF shebang line fails outright.
+#
+# eol=lf also normalises on the way in, so an editor that writes CRLF cannot reintroduce the
+# divergence via a commit.
+*.sh text eol=lf
+
+# The built dashboard is BUILD OUTPUT that is tracked on purpose: console/internal/web/web.go embeds
+# it with `//go:embed all:dist`, so it must be in the tree for a clone to serve the console rather
+# than a placeholder page.
+#
+# It is Vite's bytes, not source anyone edits. A checkout that rewrote its line endings would embed
+# something other than what the build produced -- inflating a minified bundle and making two
+# machines embed two different byte streams from one commit.
+console/internal/web/dist/** -text

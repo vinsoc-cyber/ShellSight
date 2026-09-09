@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Agent-Class: com.shellsight.javamem.ExtractAgent
+Can-Retransform-Classes: true
+Can-Redefine-Classes: true
+

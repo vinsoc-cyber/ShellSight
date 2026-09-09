@@ -1,0 +1,253 @@
+{
+  "schema_version": "1.0",
+  "scan": {
+    "host": "DESKTOP-49M8QBL",
+    "started": "2026-09-03T05:31:47Z",
+    "finished": "2026-09-03T05:31:48Z",
+    "tool_version": "1.0.0",
+    "run_id": "20260903_053147",
+    "operator": "DESKTOP-49M8QBL\\thanh",
+    "invocation": "C:\\Users\\thanh\\Desktop\\shellsight\\shellsight\\bin\\shellsight.exe scan --views disk --path C:\\tmp\\rfix\\webroot --out C:\\tmp\\rfix\\out"
+  },
+  "verdict": {
+    "tier": "confirmed",
+    "score": 90,
+    "incomplete": false
+  },
+  "coverage": [
+    {
+      "view": "disk",
+      "status": "ran",
+      "targets_scanned": 1,
+      "skipped": {
+        "non_regular": 0,
+        "unreadable": 0,
+        "oversize_skipped": 0,
+        "no_language_detector": 0
+      },
+      "discovery": {
+        "roots": [
+          {
+            "path": "C:\\tmp\\rfix\\webroot",
+            "mechanism": "explicit"
+          }
+        ],
+        "mechanisms": [
+          {
+            "mechanism": "explicit",
+            "status": "succeeded",
+            "roots": 1
+          }
+        ]
+      }
+    }
+  ],
+  "findings": [
+    {
+      "schema_version": "1.0",
+      "id": "74ddb246d1fc-ObfuscatedPhp",
+      "host": "DESKTOP-49M8QBL",
+      "view": "disk",
+      "target": {
+        "kind": "file",
+        "file": {
+          "path": "C:\\tmp\\rfix\\webroot\\shell.php",
+          "sha256": "74ddb246d1fcfe3edaba76d524f70de8bc178cd8e1bead8f52b8fe32eed1a5d7"
+        }
+      },
+      "artifact": {
+        "kind": "file-webshell",
+        "identity": "shell.php",
+        "location": "C:\\tmp\\rfix\\webroot\\shell.php"
+      },
+      "detection": {
+        "basis": "signature",
+        "knowledge_ref": "kb:yara/ObfuscatedPhp",
+        "evidence": "YARA rule ObfuscatedPhp matched: $eval",
+        "allowlisted": false
+      },
+      "score": 70,
+      "tier": "likely-malicious",
+      "classification": {
+        "family": null,
+        "capability": null,
+        "source": null,
+        "confidence": 0
+      },
+      "artifacts": {},
+      "context": {
+        "yara_matches": "$eval@3: \u003c?php @eval("
+      },
+      "correlation_id": "incident-DESKTOP-49M8QBL",
+      "mitre": [
+        "T1505.003"
+      ],
+      "fingerprint": "d55207c14227523b"
+    },
+    {
+      "schema_version": "1.0",
+      "id": "74ddb246d1fc-DodgyPhp",
+      "host": "DESKTOP-49M8QBL",
+      "view": "disk",
+      "target": {
+        "kind": "file",
+        "file": {
+          "path": "C:\\tmp\\rfix\\webroot\\shell.php",
+          "sha256": "74ddb246d1fcfe3edaba76d524f70de8bc178cd8e1bead8f52b8fe32eed1a5d7"
+        }
+      },
+      "artifact": {
+        "kind": "file-webshell",
+        "identity": "shell.php",
+        "location": "C:\\tmp\\rfix\\webroot\\shell.php"
+      },
+      "detection": {
+        "basis": "signature",
+        "knowledge_ref": "kb:yara/DodgyPhp",
+        "evidence": "YARA rule DodgyPhp matched: $at_eval, $execution",
+        "allowlisted": false
+      },
+      "score": 70,
+      "tier": "likely-malicious",
+      "classification": {
+        "family": null,
+        "capability": null,
+        "source": null,
+        "confidence": 0
+      },
+      "artifacts": {},
+      "context": {
+        "yara_matches": "$execution@10: eval($_POST; $at_eval@9: @eval("
+      },
+      "correlation_id": "incident-DESKTOP-49M8QBL",
+      "mitre": [
+        "T1505.003"
+      ],
+      "fingerprint": "b813a93d4c556726"
+    },
+    {
+      "schema_version": "1.0",
+      "id": "74ddb246d1fc-SIGNATURE_BASE_WEBSHELL_PHP_Generic_Eval",
+      "host": "DESKTOP-49M8QBL",
+      "view": "disk",
+      "target": {
+        "kind": "file",
+        "file": {
+          "path": "C:\\tmp\\rfix\\webroot\\shell.php",
+          "sha256": "74ddb246d1fcfe3edaba76d524f70de8bc178cd8e1bead8f52b8fe32eed1a5d7"
+        }
+      },
+      "artifact": {
+        "kind": "file-webshell",
+        "identity": "shell.php",
+        "location": "C:\\tmp\\rfix\\webroot\\shell.php"
+      },
+      "detection": {
+        "basis": "signature",
+        "knowledge_ref": "kb:yara/SIGNATURE_BASE_WEBSHELL_PHP_Generic_Eval",
+        "evidence": "YARA rule SIGNATURE_BASE_WEBSHELL_PHP_Generic_Eval matched: $geval",
+        "allowlisted": false
+      },
+      "score": 75,
+      "tier": "likely-malicious",
+      "classification": {
+        "family": null,
+        "capability": null,
+        "source": null,
+        "confidence": 0
+      },
+      "artifacts": {},
+      "context": {
+        "rule_author": "Arnim Rupp (https://github.com/ruppde)",
+        "rule_reference": "Internal Research",
+        "yara_matches": "$geval@10: eval($_POST"
+      },
+      "correlation_id": "incident-DESKTOP-49M8QBL",
+      "mitre": [
+        "T1505.003"
+      ],
+      "fingerprint": "679bb55a599b83f2"
+    },
+    {
+      "schema_version": "1.0",
+      "id": "74ddb246d1fc-php_eval_request_webshell",
+      "host": "DESKTOP-49M8QBL",
+      "view": "disk",
+      "target": {
+        "kind": "file",
+        "file": {
+          "path": "C:\\tmp\\rfix\\webroot\\shell.php",
+          "sha256": "74ddb246d1fcfe3edaba76d524f70de8bc178cd8e1bead8f52b8fe32eed1a5d7"
+        }
+      },
+      "artifact": {
+        "kind": "file-webshell",
+        "identity": "shell.php",
+        "location": "C:\\tmp\\rfix\\webroot\\shell.php"
+      },
+      "detection": {
+        "basis": "signature",
+        "knowledge_ref": "kb:yara/php_eval_request_webshell",
+        "evidence": "YARA rule php_eval_request_webshell matched: $eval_req",
+        "allowlisted": false
+      },
+      "score": 70,
+      "tier": "likely-malicious",
+      "classification": {
+        "family": "GenericEval",
+        "capability": null,
+        "source": null,
+        "confidence": 0
+      },
+      "artifacts": {},
+      "context": {
+        "rule_author": "ShellSight",
+        "technique_cells": "php/dispatch/eval-request",
+        "yara_matches": "$eval_req@10: eval($_POST"
+      },
+      "correlation_id": "incident-DESKTOP-49M8QBL",
+      "mitre": [
+        "T1505.003"
+      ],
+      "fingerprint": "ddb267a774678857"
+    },
+    {
+      "schema_version": "1.0",
+      "id": "74ddb246d1fc-phptaint:sink-on-request",
+      "host": "DESKTOP-49M8QBL",
+      "view": "disk",
+      "target": {
+        "kind": "file",
+        "file": {
+          "path": "C:\\tmp\\rfix\\webroot\\shell.php",
+          "sha256": "74ddb246d1fcfe3edaba76d524f70de8bc178cd8e1bead8f52b8fe32eed1a5d7"
+        }
+      },
+      "artifact": {
+        "kind": "file-webshell",
+        "identity": "shell.php",
+        "location": "C:\\tmp\\rfix\\webroot\\shell.php"
+      },
+      "detection": {
+        "basis": "heuristic",
+        "knowledge_ref": "phptaint:sink-on-request",
+        "evidence": "AST taint: eval(...) of request input",
+        "allowlisted": false
+      },
+      "score": 90,
+      "tier": "confirmed",
+      "classification": {
+        "family": "GenericEval",
+        "capability": null,
+        "source": null,
+        "confidence": 0
+      },
+      "artifacts": {},
+      "correlation_id": "incident-DESKTOP-49M8QBL",
+      "mitre": [
+        "T1505.003"
+      ],
+      "fingerprint": "8341820960d9bec1"
+    }
+  ]
+}

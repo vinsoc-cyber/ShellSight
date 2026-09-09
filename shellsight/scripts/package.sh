@@ -591,8 +591,20 @@ esac
 [ -s "$ZIP" ] || fail "archive creation produced an empty file"
 
 ZIP_RECORDED_SHA256="$(sha256_file "$ZIP")" || fail "cannot hash created archive"
-printf '%s\n' "$ZIP_RECORDED_SHA256" > "$ZIP.sha256" || fail "cannot record archive SHA-256"
-ZIP_MANIFEST_SHA256="$(tr -d '\r\n ' < "$ZIP.sha256")" || fail "cannot read recorded archive SHA-256"
+# "<hash>  <basename>", the coreutils format, so the recipient can run the obvious command:
+#
+#   sha256sum -c shellsight-<version>-linux-amd64.tar.gz.sha256
+#
+# It used to be the bare digest with no filename, which `sha256sum -c` rejects outright -- "no
+# properly formatted SHA256 checksum lines found" -- while README.md told analysts to run exactly
+# that. Shipping a verification file that cannot be verified with the documented command is worse
+# than shipping none, because it teaches the recipient to skip the check.
+#
+# The BASENAME, not the path: the file sits beside the archive, and `-c` resolves relative to the
+# working directory.
+printf '%s  %s\n' "$ZIP_RECORDED_SHA256" "$(basename "$ZIP")" > "$ZIP.sha256" \
+  || fail "cannot record archive SHA-256"
+ZIP_MANIFEST_SHA256="$(cut -d' ' -f1 < "$ZIP.sha256" | tr -d '\r\n ')" || fail "cannot read recorded archive SHA-256"
 ZIP_VERIFIED_SHA256="$(sha256_file "$ZIP")" || fail "cannot recompute archive SHA-256"
 [ "$ZIP_RECORDED_SHA256" = "$ZIP_MANIFEST_SHA256" ] || fail "recorded archive SHA-256 does not match hash file"
 [ "$ZIP_RECORDED_SHA256" = "$ZIP_VERIFIED_SHA256" ] || fail "recomputed archive SHA-256 mismatch"
